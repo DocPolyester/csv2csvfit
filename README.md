@@ -1,3 +1,5 @@
+With the script you can transcode the WATERROWER/SMARTROW CSV to GARMIN CSV (FIT compliant format). 
+
 usage:<br>
 
 1.) first you will need to get the FitCSVTool from GARMIN
