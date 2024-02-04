@@ -1,6 +1,6 @@
 #!/usr/bin/python3.9
 
-
+import os
 import csv,argparse,sys
 from os.path import exists
 
@@ -8,13 +8,17 @@ from datetime import datetime, timezone
 
 
 
-
-
 argParser = argparse.ArgumentParser()
 argParser.add_argument("-i","-input",type=str, help="CSV input file", required=True)
-argParser.add_argument("-o","-output",type=str, help="FIT compliant CSV output file", required=True)
-argParser.add_argument("-f", help="Overwrite output file", action="store_true")
+#argParser.add_argument("-o","-output",type=str, help="FIT compliant CSV output file", required=True)
+argParser.add_argument("-ae","-aerob",type=str, help="aerob trainingseffect", required=True)
+argParser.add_argument("-an","-anaerob",type=str, help="anaerob trainingseffect", required=True)
+#argParser.add_argument("-f", help="Overwrite output file", action="store_true")
 args = argParser.parse_args()
+
+
+aerob_te = str(args.ae)
+anaerob_te = str(args.an)
 
 
 if not exists(args.i):
@@ -23,11 +27,11 @@ if not exists(args.i):
 
 csv_filename = args.i
 
-if exists(args.o) and not args.f:
-    print('output file already exist')
-    sys.exit()
+#if exists(args.o) and not args.f:
+#    print('output file already exist')
+#    sys.exit()
 
-output_filename = args.o
+output_filename = 'tmp.csv'#args.o
 
 def is_float(string):
     try:
@@ -134,8 +138,8 @@ with open(csv_filename) as csvfile:
     total_calories = round((float(total_work)/float(total_elapsed_time)*4*0.8604+300)*float(total_elapsed_time)/3600,2)
 
 
-    print_string = print_string +['Definition,11,session,start_time,1,,total_elapsed_time,1,,total_distance,1,,total_strokes,1,,sport_profile_name,128,,sport,1,,sub_sport,1,']
-    print_string = print_string +['Data,11,session,start_time,\"'+str(start_time)+'\",s,total_elapsed_time,\"'+total_elapsed_time+'\",s,total_distance,\"'+total_distance+'\",m,total_strokes,\"'+total_strokes+'\",cycles,sport_profile_name,Waterrower,,sport,15,,sub_sport,14,']
+    print_string = print_string +['Definition,11,session,start_time,1,,total_elapsed_time,1,,total_distance,1,,total_strokes,1,,sport_profile_name,128,,sport,1,,sub_sport,1,total_training_effect,1,,total_anaerobic_training_effect,1,']
+    print_string = print_string +['Data,11,session,start_time,\"'+str(start_time)+'\",s,total_elapsed_time,\"'+total_elapsed_time+'\",s,total_distance,\"'+total_distance+'\",m,total_strokes,\"'+total_strokes+'\",cycles,sport_profile_name,Waterrower,,sport,15,,sub_sport,14,,total_training_effect,'+aerob_te+',,total_anaerobic_training_effect,'+anaerob_te+',']
 
     print_string = print_string+[str('Definition,12,activity,timestamp,1,,total_timer_time,1,,local_timestamp,1,,num_sessions,1,,type,1,,event,1,,event_type,1,,event_group,1,,')]
     print_string = print_string+[str('Data,12,activity,timestamp,\"'+str(start_time)+'\",,total_timer_time,\"'+total_elapsed_time+'\",s,local_timestamp,\"'+str(start_time)+'\",,num_sessions,1,,type,0,,event,26,,event_type,1,')]
@@ -154,3 +158,9 @@ with open(output_filename, 'w', encoding='utf-8') as csv_file:
     for row in print_string:
         #print(row)
         csv_file.write(row+'\n')
+
+
+
+fitfile_name = csv_filename.rsplit('.')[0]+'.fit'
+os.system("java -jar ./FitCSVTool.jar -c tmp.csv "+fitfile_name)
+os.system("rm tmp.csv")
